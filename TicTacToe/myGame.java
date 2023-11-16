@@ -18,12 +18,14 @@ public class myGame {
 
     public static void main(String[] args) {
         makeGrid();
-        while (noWinners) {
+        while (noWinners && round <= 9) {
             playRound();
-            round++;
             checkWin();
+            round++;
         }
-        //resetGrid();
+        if (round > 9 && noWinners) {
+            System.out.println("It's a tie!");
+        }
         playAgain();
     }
 
@@ -38,7 +40,6 @@ public class myGame {
 
     private static void printGrid() {
         System.out.println("Round " + round + ": ");
-
         for (int row = 0; row < grid.length; row++) {
             for (int col = 0; col < grid[0].length; col++) {
                 System.out.print(grid[row][col]);
@@ -50,67 +51,77 @@ public class myGame {
     public static void playRound() {
         printGrid();
 
-        if (XorO == 1) { 
-            System.out.print("X, make your move (row,col): "); 
-            XorO *= -1;
-        } else if (XorO == -1) {
-            System.out.print("O, make your move (row,col): ");
-            XorO *= -1;
-        }
+        boolean validInput = false;
 
-        String getMove = input.nextLine();
-        System.out.println();
+        while (!validInput) {
+            if (XorO == 1) System.out.print("X, make your move (row,col): "); 
+            else System.out.print("O, make your move (row,col): ");
 
-        int row1 = Integer.parseInt(getMove.substring(0, 1));
-        int col1 = Integer.parseInt(getMove.substring(2));
-        checkValid(row1, col1);
+            String getMove = input.nextLine();
+            System.out.println();
 
-        //if (checkValid) {
-            grid[row1][col1] = "[" + playerSymbol + "]";
-            for (int row = 0; row < grid.length; row++) {
-                for (int col = 0; col < grid[0].length; col++) {
-                    if (row == row1 && col == col1 && XorO == 1) { //&& grid[row1][col1] == "[ ]"
-                        playerSymbol = "X"; 
-                    } else if (row == row1 && col == col1 && XorO == -1) { //&& grid[row1][col1] == "[ ]"
-                        playerSymbol = "O"; 
-                    }
-                }
+            int row1 = Integer.parseInt(getMove.substring(0, 1));
+            int col1 = Integer.parseInt(getMove.substring(2, 3));
+
+            if (row1 < 3 && col1 < 3 && grid[row1][col1].equals("[ ]")) {
+                grid[row1][col1] = "[" + playerSymbol + "]";
+                XorO *= -1;
+
+                if (XorO == 1) playerSymbol = "X"; 
+                else if (XorO == -1) playerSymbol = "O";
+
+                validInput = true;
+            } else {
+                System.out.println("Invalid move! Try again!");
             }
-        //}
-    }
-
-    public static boolean checkValid(int r, int c) { 
-        boolean moveIsValid = true;
-
-        if (r >= 3 || c >= 3) {
-            moveIsValid = false;
         }
-        return moveIsValid;
+
     }
 
     public static void checkWin() {
+        for (int i = 0; i < 3; i++) {
+            if (grid[i][0].equals("[X]") && grid[i][1].equals("[X]") && grid[i][2].equals("[X]") ||
+            grid[i][0].equals("[O]") && grid[i][1].equals("[O]") && grid[i][2].equals("[O]")) {
+                displayWin(grid[i][0]);
+            }
+            if (grid[0][i].equals("[X]") && grid[1][i].equals("[X]") && grid[2][i].equals("[X]") ||
+            grid[0][i].equals("[O]") && grid[1][i].equals("[O]") && grid[2][i].equals("[O]")) {
+                displayWin(grid[0][i]);
+            }
+        }
 
+        if ((grid[0][0].equals("[X]") && grid[1][1].equals("[X]") && grid[2][2].equals("[X]")) ||
+        (grid[0][0].equals("[O]") && grid[1][1].equals("[O]") && grid[2][2].equals("[O]")) ||
+        (grid[0][2].equals("[X]") && grid[1][1].equals("[X]") && grid[2][0].equals("[X]")) ||
+        (grid[0][2].equals("[O]") && grid[1][1].equals("[O]") && grid[2][0].equals("[O]"))) {
+            displayWin(grid[1][1]);
+        }
     }
 
-    public static void resetGrid() {
-        grid = new String[3][3];
-        round = 1;
+    public static void displayWin(String symbol) {
+        printGrid();
+        if (symbol.equals("[X]")) System.out.println("Player X wins! \n");
+        else System.out.println("Player O wins! \n");
+        noWinners = false;
     }
 
     public static void playAgain(){
         System.out.println("Play Again? Y/N");
         String answer = input.nextLine();
+        System.out.println();
 
         if (answer.equalsIgnoreCase("Y")) {
             noWinners = true;
-            resetGrid();
+            makeGrid();
+            round = 1;
+
+            while (noWinners && round <= 9) {
+                playRound();
+                checkWin();
+                round++;
+            }
+            if (round > 9 && noWinners) System.out.println("It's a tie!");
+            playAgain();
         } else System.out.println("Thanks for playing!");
     }
 }
-
-//Do not allow the user to make invalid moves. If a player tries to place their symbol on a spot that has 
-//already been taken, or if they enter a row or column beyond the bounds of a 3x3 grid, then force them 
-//to make another move.
-
-//After making a move, evaluate if the game has been won or not. If a player has won, display the winning 
-//board and congratulate the winning player. If not, continue to the next round.
